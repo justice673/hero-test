@@ -1,36 +1,65 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+## Hero Price Check
 
-## Getting Started
+Server-rendered Next.js experience for surfacing live Hero Splendor Plus pricing in Delhi. The `/hero-splendor-plus/price-in-delhi` route performs an SSR MongoDB lookup and renders a responsive, Tailwind-styled pricing dashboard with SEO-friendly metadata.
 
-First, run the development server:
+## Requirements
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+- Node.js 18+
+- MongoDB cluster with read access to a `prices` collection
+- The following environment variables:
+  - `MONGODB_URI` – connection string with credentials
+  - `MONGODB_DB_NAME` – optional, defaults to `hero_price_check`
+
+## Local Development
+
+1. Install dependencies:
+
+   ```bash
+   npm install
+   ```
+
+2. Create a `.env.local` file and set the MongoDB variables:
+
+   ```bash
+   MONGODB_URI="mongodb+srv://<user>:<password>@cluster.example.mongodb.net"
+   MONGODB_DB_NAME="hero_price_check"
+   ```
+
+3. Start the development server:
+
+   ```bash
+   npm run dev
+   ```
+
+4. Visit [http://localhost:3000/hero-splendor-plus/price-in-delhi](http://localhost:3000/hero-splendor-plus/price-in-delhi).
+
+## Data Shape
+
+The page expects documents shaped like below in the `prices` collection:
+
+```json
+{
+  "modelSlug": "hero-splendor-plus",
+  "citySlug": "delhi",
+  "city": "Delhi",
+  "modelName": "Hero Splendor Plus",
+  "currency": "INR",
+  "priceDetails": [
+    {
+      "variant": "Drum Self Alloy",
+      "exShowroomPrice": 78900,
+      "onRoadPrice": 95600,
+      "insurance": 5200,
+      "roadTax": 4800
+    }
+  ],
+  "lastUpdatedAt": "2024-09-20T10:00:00.000Z",
+  "sourceUrl": "https://www.heromotocorp.com"
+}
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Deployment
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
-
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
-
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- Push changes to GitHub and connect the repository to Vercel.
+- Configure the MongoDB environment variables in the Vercel project settings.
+- Trigger a deploy; the `/hero-splendor-plus/price-in-delhi` page renders server-side on every request via `dynamic = "force-dynamic"`.
