@@ -4,22 +4,39 @@ import { getMongoClient } from "../db/mongoClient";
 const DEFAULT_DB_NAME = "hero_price_check";
 const COLLECTION_NAME = "prices";
 
-export type PriceBreakdown = {
+type BrakeInfo = {
+  front?: string;
+  rear?: string;
+};
+
+export type VariantDetail = {
   variant: string;
   exShowroomPrice: number;
-  onRoadPrice: number;
+  registration?: number;
   insurance?: number;
-  roadTax?: number;
-  others?: number;
+  otherCharges?: number;
+  onRoadPrice: number;
+  engineCc?: number;
+  power?: string;
+  torque?: string;
+  mileage?: string;
+  fuelType?: string;
+  transmission?: string;
+  colorOptions?: string[];
+  features?: string[];
+  kerbWeight?: string;
+  fuelTankCapacity?: string;
+  brakeType?: BrakeInfo;
 };
 
 export type HeroPriceDocument = WithId<Document> & {
   modelSlug: string;
   citySlug: string;
   city: string;
+  brandName?: string;
   modelName: string;
   currency: string;
-  priceDetails: PriceBreakdown[];
+  priceDetails: VariantDetail[];
   lastUpdatedAt: Date;
   sourceUrl?: string;
 };
@@ -47,13 +64,58 @@ function normalizePriceDocument(document: HeroPriceDocument): HeroPriceDocument 
     ...document,
     priceDetails: document.priceDetails.map((detail) => ({
       ...detail,
-      exShowroomPrice: Number(detail.exShowroomPrice ?? 0),
-      onRoadPrice: Number(detail.onRoadPrice ?? 0),
-      insurance: detail.insurance !== undefined ? Number(detail.insurance) : undefined,
-      roadTax: detail.roadTax !== undefined ? Number(detail.roadTax) : undefined,
-      others: detail.others !== undefined ? Number(detail.others) : undefined,
+      exShowroomPrice: toNumber(detail.exShowroomPrice),
+      registration: toOptionalNumber(detail.registration),
+      insurance: toOptionalNumber(detail.insurance),
+      otherCharges: toOptionalNumber(detail.otherCharges),
+      onRoadPrice: toNumber(detail.onRoadPrice),
+      engineCc: toOptionalNumber(detail.engineCc),
+      colorOptions: toStringArray(detail.colorOptions),
+      features: toStringArray(detail.features),
+      brakeType: normalizeBrakeInfo(detail.brakeType),
     })),
     lastUpdatedAt: new Date(document.lastUpdatedAt),
   };
 }
 
+function toNumber(value: unknown, fallback = 0): number {
+  const parsed = Number(value);
+  return Number.isNaN(parsed) ? fallback : parsed;
+}
+
+function toOptionalNumber(value: unknown): number | undefined {
+  const parsed = Number(value);
+  return Number.isNaN(parsed) ? undefined : parsed;
+}
+
+function toStringArray(value: unknown): string[] {
+  if (Array.isArray(value)) {
+    return value
+      .map((item) => (typeof item === "string" ? item.trim() : String(item)))
+      .filter((item) => item.length > 0);
+  }
+
+  if (typeof value === "string" && value.trim().length > 0) {
+    return [value.trim()];
+  }
+
+  return [];
+}
+
+function normalizeBrakeInfo(brakeInfo: VariantDetail["brakeType"]): BrakeInfo | undefined {
+  if (!brakeInfo) {
+    return undefined;
+  }
+
+  const front = brakeInfo.front?.trim();
+  const rear = brakeInfo.rear?.trim();
+
+  if (!front && !rear) {
+    return undefined;
+  }
+
+  return {
+    front: front || undefined,
+    rear: rear || undefined,
+  };
+}

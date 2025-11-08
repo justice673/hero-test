@@ -1,4 +1,4 @@
-import { PriceBreakdown } from "@/lib/services/heroPriceService";
+import { VariantDetail } from "@/lib/services/heroPriceService";
 
 export function formatCurrency(amount: number | undefined, currency: string): string {
   if (amount === undefined || Number.isNaN(Number(amount))) {
@@ -34,15 +34,15 @@ export function formatRelativeDate(date: Date): string {
   return formatter.format(diffInDays, "day");
 }
 
-export function getLowestOnRoadPrice(details: PriceBreakdown[]): number {
+export function getLowestOnRoadPrice(details: VariantDetail[]): number {
   return Math.min(...details.map((detail) => Number(detail.onRoadPrice)));
 }
 
-export function getHighestOnRoadPrice(details: PriceBreakdown[]): number {
+export function getHighestOnRoadPrice(details: VariantDetail[]): number {
   return Math.max(...details.map((detail) => Number(detail.onRoadPrice)));
 }
 
-export function getAverageInsurance(details: PriceBreakdown[]): number {
+export function getAverageInsurance(details: VariantDetail[]): number {
   const insuranceValues = details
     .map((detail) => detail.insurance)
     .filter((value): value is number => typeof value === "number" && !Number.isNaN(value));

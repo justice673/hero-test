@@ -1,35 +1,61 @@
-import { formatRelativeDate } from "@/lib/utils/pricing";
+import { formatCurrency, formatRelativeDate } from "@/lib/utils/pricing";
 
 type HeroIntroProps = {
-  city: string;
+  brandName?: string;
   modelName: string;
+  city: string;
+  currency: string;
   lastUpdatedAt: Date;
+  lowestOnRoadPrice: number;
+  highestOnRoadPrice: number;
+  variantCount: number;
 };
 
-export function HeroIntro({ city, modelName, lastUpdatedAt }: HeroIntroProps) {
+export function HeroIntro({
+  brandName,
+  modelName,
+  city,
+  currency,
+  lastUpdatedAt,
+  lowestOnRoadPrice,
+  highestOnRoadPrice,
+  variantCount,
+}: HeroIntroProps) {
+  const displayName = brandName ? `${brandName} ${modelName}` : modelName;
+
   return (
-    <section className="mb-16 text-center">
-      <div className="mb-6 inline-flex items-center gap-3 rounded-full border border-indigo-500/30 bg-indigo-500/10 px-5 py-3 backdrop-blur-sm">
-        <span className="relative flex h-3 w-3">
-          <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75" />
-          <span className="relative inline-flex h-3 w-3 rounded-full bg-emerald-500" />
-        </span>
-        <span className="font-accent text-xl text-emerald-300">
-          Live Pricing • Updated {formatRelativeDate(lastUpdatedAt)}
-        </span>
+    <section className="overflow-hidden rounded-3xl bg-[#1A73E8] text-white shadow-lg">
+      <div className="relative isolate px-6 py-12 sm:px-10 sm:py-16">
+        <div className="absolute inset-y-0 right-0 hidden w-1/2 bg-white/10 blur-3xl sm:block" aria-hidden="true" />
+
+        <div className="relative flex flex-col gap-6 sm:flex-row sm:items-end sm:justify-between">
+          <div className="max-w-2xl space-y-4">
+            <span className="inline-flex items-center gap-2 rounded-full bg-white/15 px-4 py-2 text-sm font-medium">
+              <span className="h-2 w-2 rounded-full bg-emerald-300" />
+              Updated {formatRelativeDate(lastUpdatedAt)}
+            </span>
+            <h1 className="text-3xl font-semibold leading-tight sm:text-4xl md:text-5xl">
+              {displayName} price in {city}
+            </h1>
+            <p className="text-base text-blue-100">
+              Compare on-road pricing, key specifications, and standout features for every {modelName} variant sold in {city}.
+            </p>
+          </div>
+
+          <div className="flex flex-col gap-3 rounded-2xl bg-blue-900/40 px-6 py-5 text-sm sm:text-base">
+            <div className="flex flex-col">
+              <span className="text-blue-100">Variants</span>
+              <strong className="text-lg font-semibold sm:text-2xl">{variantCount}</strong>
+            </div>
+            <div className="flex flex-col">
+              <span className="text-blue-100">Price range</span>
+              <strong className="text-lg font-semibold sm:text-2xl">
+                {formatCurrency(lowestOnRoadPrice, currency)} – {formatCurrency(highestOnRoadPrice, currency)}
+              </strong>
+            </div>
+          </div>
+        </div>
       </div>
-
-      <h1 className="mb-6 bg-gradient-to-r from-white via-blue-100 to-indigo-200 bg-clip-text text-5xl font-bold leading-tight text-transparent md:text-7xl">
-        {modelName}
-      </h1>
-
-      <p className="mx-auto mb-4 max-w-2xl text-lg text-slate-300 md:text-xl">
-        On-Road Price in <span className="font-semibold text-white">{city}</span>
-      </p>
-
-      <p className="mx-auto max-w-3xl text-base text-slate-400">
-        Real-time pricing from authorized Hero MotoCorp dealerships. Transparent breakdown of ex-showroom cost, insurance, RTO taxes, and registration fees.
-      </p>
     </section>
   );
 }

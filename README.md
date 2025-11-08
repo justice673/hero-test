@@ -42,21 +42,39 @@ The page expects documents shaped like below in the `prices` collection:
   "modelSlug": "hero-splendor-plus",
   "citySlug": "delhi",
   "city": "Delhi",
-  "modelName": "Hero Splendor Plus",
+  "brandName": "Hero",
+  "modelName": "Splendor Plus",
   "currency": "INR",
   "priceDetails": [
     {
       "variant": "Drum Self Alloy",
       "exShowroomPrice": 78900,
-      "onRoadPrice": 95600,
+      "registration": 4800,
       "insurance": 5200,
-      "roadTax": 4800
+      "otherCharges": 1000,
+      "onRoadPrice": 95600,
+      "engineCc": 97.2,
+      "power": "7.9 PS",
+      "torque": "8.05 Nm",
+      "mileage": "70 kmpl",
+      "fuelType": "Petrol",
+      "transmission": "4 Speed Manual",
+      "colorOptions": ["Black with Red", "Matte Axis Grey"] ,
+      "features": ["i3S idle stop-start", "Tubeless tyres", "Alloy wheels"],
+      "kerbWeight": "112 kg",
+      "fuelTankCapacity": "9.8 L",
+      "brakeType": {
+        "front": "130 mm Drum",
+        "rear": "130 mm Drum"
+      }
     }
   ],
   "lastUpdatedAt": "2024-09-20T10:00:00.000Z",
   "sourceUrl": "https://www.heromotocorp.com"
 }
 ```
+
+Fields such as registration, insurance, other charges, kerb weight, fuel tank capacity, brake details, and colour options are optional. Omit them if the data is unavailable and the UI will hide the corresponding sections.
 
 ## Deployment
 
