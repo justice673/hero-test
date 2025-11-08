@@ -1,4 +1,4 @@
-import { VariantDetail } from "@/lib/services/heroPriceService";
+import { VariantDetail } from "@/lib/services/vehiclePricingService";
 
 export function formatCurrency(amount: number | undefined, currency: string): string {
   if (amount === undefined || Number.isNaN(Number(amount))) {

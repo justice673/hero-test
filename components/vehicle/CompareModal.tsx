@@ -47,7 +47,7 @@ export function CompareModal({
 
   return (
     <div className="fixed inset-0 z-40 flex items-center justify-center bg-slate-900/60 px-4 py-6">
-      <div className="relative w-full max-w-4xl rounded-3xl bg-white shadow-2xl">
+      <div className="relative flex max-h-[calc(100vh-3rem)] w-full max-w-4xl flex-col overflow-hidden rounded-3xl bg-white shadow-2xl">
         <div className="flex items-center justify-between border-b border-slate-200 px-6 py-4">
           <div>
             <h2 className="text-lg font-semibold text-slate-900">
@@ -63,11 +63,13 @@ export function CompareModal({
             className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-slate-200 text-slate-500 transition hover:bg-slate-50 hover:text-slate-700"
             aria-label="Close compare modal"
           >
-            ×
+            <svg className="h-4 w-4" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5">
+              <path d="M4 4l8 8m0-8l-8 8" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
           </button>
         </div>
 
-        <div className="grid gap-4 px-6 py-6 sm:grid-cols-3">
+        <div className="grid flex-1 gap-4 overflow-y-auto px-6 py-6 sm:grid-cols-3">
           {selections.map((selection, index) => {
             const isPrimary = index === 0;
             const label = isPrimary && selection.label ? selection.label : selection.label || `Add ${type} ${index + 1}`;
@@ -110,14 +112,23 @@ export function CompareModal({
           <p className="text-sm text-slate-500">
             You can refine comparisons further on ZigWheels or CarDekho once you pick the vehicles.
           </p>
-          <a
-            href={ctaHref}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center justify-center rounded-full bg-[#1A73E8] px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-[#155cc0]"
-          >
-            Continue to compare
-          </a>
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-3">
+            <button
+              type="button"
+              onClick={onClose}
+              className="inline-flex w-full items-center justify-center rounded-full border border-slate-200 px-5 py-2.5 text-sm font-semibold text-slate-600 transition hover:bg-slate-50 hover:text-slate-800 sm:w-auto"
+            >
+              Cancel
+            </button>
+            <a
+              href={ctaHref}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex w-full items-center justify-center rounded-full bg-[#1A73E8] px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-[#155cc0] sm:w-auto"
+            >
+              Compare now
+            </a>
+          </div>
         </div>
       </div>
     </div>

@@ -2,25 +2,25 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import Script from "next/script";
 
-import { getVehiclePricing } from "@/lib/services/vehiclePricingService";
-import { getHighestOnRoadPrice, getLowestOnRoadPrice, formatCurrency } from "@/lib/utils/pricing";
-import { createVehicleSchema } from "@/lib/seo/vehicleSchema";
 import { CityPriceList } from "@/components/vehicle/CityPriceList";
 import { CompareSection } from "@/components/vehicle/CompareSection";
 import { FaqAccordion } from "@/components/vehicle/FaqAccordion";
 import { HeroIntro } from "@/components/vehicle/HeroIntro";
 import { ReviewSection } from "@/components/vehicle/ReviewSection";
 import { VariantCard } from "@/components/vehicle/VariantCard";
+import { getVehiclePricing } from "@/lib/services/vehiclePricingService";
+import { createVehicleSchema } from "@/lib/seo/vehicleSchema";
+import { formatCurrency, getHighestOnRoadPrice, getLowestOnRoadPrice } from "@/lib/utils/pricing";
 
 export const dynamic = "force-dynamic";
 
-const MODEL_SLUG = "hero-splendor-plus";
+const MODEL_SLUG = "maruti-alto-k10";
 const CITY_SLUG = "delhi";
 
 export async function generateMetadata(): Promise<Metadata> {
-  const title = "Hero Splendor Plus Price in Delhi | On-Road Cost & Variants";
+  const title = "Maruti Alto K10 Price in Delhi | On-Road Cost, Variants & Features";
   const description =
-    "Explore the latest Hero Splendor Plus on-road price in Delhi with variant-wise breakdown, specs, features, reviews, and price comparisons.";
+    "Check Maruti Alto K10 on-road price in Delhi with variant-wise cost breakup, specs, reviews, and city-wise comparison.";
 
   return {
     title,
@@ -28,17 +28,17 @@ export async function generateMetadata(): Promise<Metadata> {
     openGraph: {
       title,
       description,
-      url: "https://hero-price-check.vercel.app/hero-splendor-plus/price-in-delhi",
+      url: "https://hero-price-check.vercel.app/maruti-alto-k10/price-in-delhi",
       type: "article",
       locale: "en_IN",
     },
     alternates: {
-      canonical: "/hero-splendor-plus/price-in-delhi",
+      canonical: "/maruti-alto-k10/price-in-delhi",
     },
   };
 }
 
-export default async function HeroSplendorPlusPricePage() {
+export default async function MarutiAltoK10PricePage() {
   try {
     const priceData = await getVehiclePricing(MODEL_SLUG, CITY_SLUG);
 
@@ -46,7 +46,7 @@ export default async function HeroSplendorPlusPricePage() {
       return (
         <EmptyState
           title="Price data unavailable"
-          description="We could not locate the Hero Splendor Plus price information for Delhi right now. Please check back later or contact support."
+          description="We could not locate the Maruti Alto K10 price information for Delhi right now. Please check back later or contact support."
         />
       );
     }
@@ -54,7 +54,7 @@ export default async function HeroSplendorPlusPricePage() {
     const {
       brandName,
       modelName,
-      vehicleType = "bike",
+      vehicleType = "car",
       city,
       currency,
       priceDetails,
@@ -68,21 +68,21 @@ export default async function HeroSplendorPlusPricePage() {
       return (
         <EmptyState
           title="Pricing data incomplete"
-          description="We are updating the variant-level pricing details for the Hero Splendor Plus in Delhi. Please check back shortly."
+          description="We are updating variant-level pricing details for the Maruti Alto K10 in Delhi. Please check back shortly."
         />
       );
     }
 
     const lowestOnRoadPrice = getLowestOnRoadPrice(priceDetails);
     const highestOnRoadPrice = getHighestOnRoadPrice(priceDetails);
-
     const displayName = brandName ? `${brandName} ${modelName}` : modelName;
+
     const vehicleSchema = createVehicleSchema({
       brandName,
       modelName,
-      vehicleType,
       modelSlug: MODEL_SLUG,
       citySlug: CITY_SLUG,
+      vehicleType,
       city,
       currency,
       priceDetails,
@@ -95,7 +95,7 @@ export default async function HeroSplendorPlusPricePage() {
     return (
       <main className="bg-slate-50 pb-16">
         <Script
-          id="hero-splendor-plus-jsonld"
+          id="maruti-alto-k10-jsonld"
           type="application/ld+json"
           strategy="afterInteractive"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(vehicleSchema) }}
@@ -127,7 +127,7 @@ export default async function HeroSplendorPlusPricePage() {
           <CityPriceList cityPrices={cityPrices ?? []} currency={currency} />
           <ReviewSection reviews={reviews ?? []} />
           <CompareSection vehicleType={vehicleType} modelSlug={MODEL_SLUG} displayName={displayName} />
-          <FaqAccordion faqs={getBikeFaqs(displayName, currency, lowestOnRoadPrice)} />
+          <FaqAccordion faqs={getCarFaqs(displayName, currency, lowestOnRoadPrice)} />
         </div>
       </main>
     );
@@ -141,25 +141,6 @@ export default async function HeroSplendorPlusPricePage() {
       />
     );
   }
-}
-
-function getBikeFaqs(displayName: string, currency: string, startingPrice: number) {
-  return [
-    {
-      question: `What is the on-road price of ${displayName} in Delhi?`,
-      answer: `${displayName} starts at ${formatCurrency(startingPrice, currency)} on road in Delhi. Pricing includes registration, insurance, and handling charges.`,
-    },
-    {
-      question: "Does the Splendor Plus offer disc brakes?",
-      answer:
-        "All current Splendor Plus variants ship with drum brakes at the front and rear. Hero has not announced a disc brake option yet.",
-    },
-    {
-      question: "What mileage can I expect in real-world riding?",
-      answer:
-        "Owners consistently report 60-70 kmpl in mixed city riding thanks to the 97.2 cc engine and i3S idle-stop system. Highway runs can return slightly higher figures with relaxed throttle.",
-    },
-  ];
 }
 
 type EmptyStateProps = {
@@ -180,4 +161,23 @@ function EmptyState({ title, description }: EmptyStateProps) {
       </Link>
     </main>
   );
+}
+
+function getCarFaqs(displayName: string, currency: string, startingPrice: number) {
+  return [
+    {
+      question: `What is the on-road price of ${displayName} in Delhi?`,
+      answer: `${displayName} starts at ${formatCurrency(startingPrice, currency)} on road in Delhi. The price includes RTO fees, insurance, and standard handling charges.`,
+    },
+    {
+      question: "Is the Alto K10 available with factory CNG?",
+      answer:
+        "Yes, Maruti offers the Alto K10 with the S-CNG kit paired to the VXi Plus AMT trim, delivering 33.85 km/kg while retaining the AMT convenience.",
+    },
+    {
+      question: "Which safety features are standard?",
+      answer:
+        "Dual airbags, ABS with EBD, rear parking sensors, speed-sensing door locks, and a high-speed alert system are standard across the Alto K10 range.",
+    },
+  ];
 }

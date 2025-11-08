@@ -1,4 +1,4 @@
-import { VariantDetail } from "@/lib/services/heroPriceService";
+import { VariantDetail } from "@/lib/services/vehiclePricingService";
 import { formatCurrency } from "@/lib/utils/pricing";
 
 type VariantCardProps = {
