@@ -43,6 +43,7 @@ export type VariantDetail = {
   kerbWeight?: string;
   fuelTankCapacity?: string;
   brakeType?: BrakeInfo;
+  imageUrl?: string;
 };
 
 export type VehiclePricingDocument = WithId<Document> & {
@@ -97,6 +98,7 @@ function normalizePriceDocument(document: VehiclePricingDocument): VehiclePricin
       otherCharges: toOptionalNumber(normalizeLegacyOtherCharges(detail as VariantDetail & { others?: number })),
       onRoadPrice: toNumber(detail.onRoadPrice),
       engineCc: toOptionalNumber(detail.engineCc),
+      imageUrl: toOptionalString(detail.imageUrl),
       power: toOptionalString(detail.power),
       torque: toOptionalString(detail.torque),
       mileage: toOptionalString(detail.mileage),

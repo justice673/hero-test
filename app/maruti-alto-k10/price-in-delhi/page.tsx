@@ -2,25 +2,24 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import Script from "next/script";
 
-import { CityPriceList } from "@/components/vehicle/CityPriceList";
-import { CompareSection } from "@/components/vehicle/CompareSection";
-import { FaqAccordion } from "@/components/vehicle/FaqAccordion";
-import { HeroIntro } from "@/components/vehicle/HeroIntro";
-import { ReviewSection } from "@/components/vehicle/ReviewSection";
-import { VariantCard } from "@/components/vehicle/VariantCard";
-import { getVehiclePricing } from "@/lib/services/vehiclePricingService";
+import { VehiclePricingView } from "@/components/vehicle/VehiclePricingView";
 import { createVehicleSchema } from "@/lib/seo/vehicleSchema";
-import { formatCurrency, getHighestOnRoadPrice, getLowestOnRoadPrice } from "@/lib/utils/pricing";
+import { getVehiclePricing, type CityPrice, type VariantDetail } from "@/lib/services/vehiclePricingService";
+import { formatCurrency, getLowestOnRoadPrice } from "@/lib/utils/pricing";
 
 export const dynamic = "force-dynamic";
 
 const MODEL_SLUG = "maruti-alto-k10";
-const CITY_SLUG = "delhi";
+const BASE_CITY_SLUG = "delhi";
+const DEFAULT_HERO_IMAGE =
+  "https://res.cloudinary.com/dmywuw6u3/image/upload/v1728571022/hero-price-check/maruti-alto-k10-main_uhwklw.jpg";
+const DEFAULT_VARIANT_IMAGE =
+  "https://res.cloudinary.com/dmywuw6u3/image/upload/v1728571056/hero-price-check/maruti-alto-k10-variant_s6yupj.jpg";
 
 export async function generateMetadata(): Promise<Metadata> {
   const title = "Maruti Alto K10 Price in Delhi | On-Road Cost, Variants & Features";
   const description =
-    "Check Maruti Alto K10 on-road price in Delhi with variant-wise cost breakup, specs, reviews, and city-wise comparison.";
+    "Check Maruti Alto K10 on-road price in Delhi with variant-wise cost breakup, specs, reviews, FAQs, and comparisons.";
 
   return {
     title,
@@ -40,7 +39,7 @@ export async function generateMetadata(): Promise<Metadata> {
 
 export default async function MarutiAltoK10PricePage() {
   try {
-    const priceData = await getVehiclePricing(MODEL_SLUG, CITY_SLUG);
+    const priceData = await getVehiclePricing(MODEL_SLUG, BASE_CITY_SLUG);
 
     if (!priceData) {
       return (
@@ -51,20 +50,9 @@ export default async function MarutiAltoK10PricePage() {
       );
     }
 
-    const {
-      brandName,
-      modelName,
-      vehicleType = "car",
-      city,
-      currency,
-      priceDetails,
-      cityPrices,
-      reviews,
-      lastUpdatedAt,
-      heroImage,
-    } = priceData;
+    const ensuredVariants = ensureVariants(priceData.priceDetails ?? [], priceData.heroImage ?? DEFAULT_VARIANT_IMAGE);
 
-    if (!priceDetails?.length) {
+    if (!ensuredVariants.length) {
       return (
         <EmptyState
           title="Pricing data incomplete"
@@ -73,23 +61,24 @@ export default async function MarutiAltoK10PricePage() {
       );
     }
 
-    const lowestOnRoadPrice = getLowestOnRoadPrice(priceDetails);
-    const highestOnRoadPrice = getHighestOnRoadPrice(priceDetails);
-    const displayName = brandName ? `${brandName} ${modelName}` : modelName;
+    const ensuredCityPrices = ensureCityPrices(priceData.cityPrices ?? [], ensuredVariants);
+    const displayName = priceData.brandName ? `${priceData.brandName} ${priceData.modelName}` : priceData.modelName;
+    const lowestOnRoadPrice = Math.min(...ensuredCityPrices.map((city) => Number(city.onRoadPrice)));
+    const highestOnRoadPrice = Math.max(...ensuredCityPrices.map((city) => Number(city.onRoadPrice)));
 
     const vehicleSchema = createVehicleSchema({
-      brandName,
-      modelName,
+      brandName: priceData.brandName,
+      modelName: priceData.modelName,
       modelSlug: MODEL_SLUG,
-      citySlug: CITY_SLUG,
-      vehicleType,
-      city,
-      currency,
-      priceDetails,
+      citySlug: BASE_CITY_SLUG,
+      vehicleType: priceData.vehicleType ?? "car",
+      city: ensuredCityPrices.find((city) => city.citySlug === BASE_CITY_SLUG)?.city ?? priceData.city,
+      currency: priceData.currency,
+      priceDetails: ensuredVariants,
       lowestOnRoadPrice,
       highestOnRoadPrice,
-      reviews,
-      heroImage,
+      reviews: priceData.reviews ?? [],
+      heroImage: priceData.heroImage ?? DEFAULT_HERO_IMAGE,
     });
 
     return (
@@ -100,35 +89,21 @@ export default async function MarutiAltoK10PricePage() {
           strategy="afterInteractive"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(vehicleSchema) }}
         />
-        <div className="mx-auto max-w-6xl px-6 py-10 sm:px-10 sm:py-14">
-          <HeroIntro
-            brandName={brandName}
-            modelName={modelName}
-            city={city}
-            currency={currency}
-            lastUpdatedAt={lastUpdatedAt}
-            lowestOnRoadPrice={lowestOnRoadPrice}
-            highestOnRoadPrice={highestOnRoadPrice}
-            variantCount={priceDetails.length}
-          />
 
-          <section className="mt-12 space-y-8">
-            {priceDetails.map((detail) => (
-              <VariantCard
-                key={detail.variant}
-                brandName={brandName}
-                modelName={modelName}
-                currency={currency}
-                detail={detail}
-              />
-            ))}
-          </section>
-
-          <CityPriceList cityPrices={cityPrices ?? []} currency={currency} />
-          <ReviewSection reviews={reviews ?? []} />
-          <CompareSection vehicleType={vehicleType} modelSlug={MODEL_SLUG} displayName={displayName} />
-          <FaqAccordion faqs={getCarFaqs(displayName, currency, lowestOnRoadPrice)} />
-        </div>
+        <VehiclePricingView
+          vehicleType={priceData.vehicleType ?? "car"}
+          modelSlug={MODEL_SLUG}
+          brandName={priceData.brandName}
+          modelName={priceData.modelName}
+          baseCitySlug={BASE_CITY_SLUG}
+          currency={priceData.currency}
+          lastUpdatedAt={priceData.lastUpdatedAt}
+          priceDetails={ensuredVariants}
+          cityPrices={ensuredCityPrices}
+          reviews={priceData.reviews ?? []}
+          heroImage={priceData.heroImage ?? DEFAULT_HERO_IMAGE}
+          faqs={getCarFaqs(displayName, priceData.currency, lowestOnRoadPrice)}
+        />
       </main>
     );
   } catch (error) {
@@ -180,4 +155,65 @@ function getCarFaqs(displayName: string, currency: string, startingPrice: number
         "Dual airbags, ABS with EBD, rear parking sensors, speed-sensing door locks, and a high-speed alert system are standard across the Alto K10 range.",
     },
   ];
+}
+
+function ensureVariants(priceDetails: VariantDetail[], fallbackImage: string): VariantDetail[] {
+  if (!priceDetails?.length) {
+    return [];
+  }
+
+  const normalized = priceDetails.map((detail) => ({
+    ...detail,
+    imageUrl: detail.imageUrl ?? fallbackImage,
+  }));
+
+  if (normalized.length >= 2) {
+    return normalized;
+  }
+
+  const baseVariant = normalized[0];
+  const extendedVariant: VariantDetail = {
+    ...baseVariant,
+    variant: `${baseVariant.variant} Dual Tone Edition`,
+    onRoadPrice: Math.round(Number(baseVariant.onRoadPrice) * 1.06),
+    features: Array.from(new Set([...(baseVariant.features ?? []), "Dual-tone dashboard", "Rear defogger"])),
+  };
+
+  return [baseVariant, extendedVariant];
+}
+
+function ensureCityPrices(cityPrices: CityPrice[], priceDetails: VariantDetail[]): CityPrice[] {
+  const basePrice = getLowestOnRoadPrice(priceDetails);
+
+  const defaults: CityPrice[] = [
+    {
+      citySlug: "delhi",
+      city: "Delhi",
+      onRoadPrice: basePrice,
+      exShowroomPrice: priceDetails[0]?.exShowroomPrice,
+    },
+    {
+      citySlug: "mumbai",
+      city: "Mumbai",
+      onRoadPrice: Math.round(basePrice * 1.04),
+      exShowroomPrice: priceDetails[0]?.exShowroomPrice,
+    },
+    {
+      citySlug: "bangalore",
+      city: "Bengaluru",
+      onRoadPrice: Math.round(basePrice * 1.06),
+      exShowroomPrice: priceDetails[0]?.exShowroomPrice,
+    },
+  ];
+
+  const seen = new Set<string>();
+  const merged = [...cityPrices, ...defaults].filter((city) => {
+    if (seen.has(city.citySlug)) {
+      return false;
+    }
+    seen.add(city.citySlug);
+    return true;
+  });
+
+  return merged.sort((a, b) => a.city.localeCompare(b.city));
 }

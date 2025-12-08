@@ -4,9 +4,11 @@ import { formatCurrency } from "@/lib/utils/pricing";
 type CityPriceListProps = {
   cityPrices: CityPrice[];
   currency: string;
+  activeCitySlug?: string;
+  onCityChange?: (citySlug: string) => void;
 };
 
-export function CityPriceList({ cityPrices, currency }: CityPriceListProps) {
+export function CityPriceList({ cityPrices, currency, activeCitySlug, onCityChange }: CityPriceListProps) {
   if (!cityPrices?.length) {
     return null;
   }
@@ -28,19 +30,35 @@ export function CityPriceList({ cityPrices, currency }: CityPriceListProps) {
               </tr>
             </thead>
             <tbody>
-              {cityPrices.map((cityPrice) => (
-                <tr key={cityPrice.citySlug} className="border-t border-slate-100">
-                  <td className="px-5 py-4 font-medium text-slate-900">{cityPrice.city}</td>
-                  <td className="px-5 py-4 text-slate-600">
-                    {cityPrice.exShowroomPrice !== undefined
-                      ? formatCurrency(cityPrice.exShowroomPrice, currency)
-                      : "-"}
-                  </td>
-                  <td className="px-5 py-4 font-semibold text-[#1A73E8]">
-                    {formatCurrency(cityPrice.onRoadPrice, currency)}
-                  </td>
-                </tr>
-              ))}
+              {cityPrices.map((cityPrice) => {
+                const isActive = cityPrice.citySlug === activeCitySlug;
+                return (
+                  <tr
+                    key={cityPrice.citySlug}
+                    className={`border-t border-slate-100 transition ${
+                      isActive ? "bg-[#1A73E8]/5" : "hover:bg-slate-50"
+                    }`}
+                  >
+                    <td className="px-5 py-4 font-medium text-slate-900">
+                      <button
+                        type="button"
+                        onClick={() => onCityChange?.(cityPrice.citySlug)}
+                        className="w-full text-left"
+                      >
+                        {cityPrice.city}
+                      </button>
+                    </td>
+                    <td className="px-5 py-4 text-slate-600">
+                      {cityPrice.exShowroomPrice !== undefined
+                        ? formatCurrency(cityPrice.exShowroomPrice, currency)
+                        : "-"}
+                    </td>
+                    <td className="px-5 py-4 font-semibold text-[#1A73E8]">
+                      {formatCurrency(cityPrice.onRoadPrice, currency)}
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </div>
